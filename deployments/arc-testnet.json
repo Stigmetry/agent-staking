@@ -1,0 +1,18 @@
+{
+  "network": "arc-testnet",
+  "chainId": 5042002,
+  "deployedAt": "2026-06-03T07:42:50Z",
+  "contracts": {
+    "AgentStaking": {
+      "address": "0x0107BD44E269888F12dCc32E9bc03E79Ca7Be770",
+      "txHash": "0x6ba925f1490d3c0c8a0993641cbe8b7942cd39e541bc01b54f9f8d35f8d4ba24",
+      "blockNumber": 45276947
+    },
+    "AgentIdentityRegistry": {
+      "address": "0x5Bef356f89425823FC7eebB3A6ED1A678F3b8233"
+    },
+    "USDC": {
+      "address": "0x3600000000000000000000000000000000000000"
+    }
+  }
+}
