@@ -1,0 +1,876 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Arc Agent Staking -- Demo</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.13.4/ethers.umd.min.js"></script>
+    <style>
+        :root {
+            --bg: #faf6f1;
+            --bg-card: #ffffff;
+            --bg-input: #f5f0ea;
+            --border: #e0d6c8;
+            --text: #2c2416;
+            --text-secondary: #7a6e5d;
+            --accent: #c4883a;
+            --accent-hover: #a87230;
+            --accent-light: #f5e6d0;
+            --success: #4a8c5c;
+            --success-light: #e8f5ec;
+            --error: #c44a3a;
+            --error-light: #fde8e5;
+            --warning: #b8860b;
+            --warning-light: #fff8e1;
+            --radius: 10px;
+            --shadow: 0 2px 12px rgba(44, 36, 22, 0.08);
+            --font: 'Roboto', sans-serif;
+            --mono: 'Roboto Mono', monospace;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: var(--font);
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 860px;
+            margin: 0 auto;
+            padding: 40px 24px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        header h1 {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 6px;
+        }
+
+        header .subtitle {
+            font-size: 15px;
+            color: var(--text-secondary);
+            font-weight: 300;
+        }
+
+        header .badge {
+            display: inline-block;
+            margin-top: 10px;
+            padding: 4px 14px;
+            background: var(--accent-light);
+            color: var(--accent);
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+            letter-spacing: 0.5px;
+        }
+
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 28px;
+            margin-bottom: 20px;
+            box-shadow: var(--shadow);
+        }
+
+        .card h2 {
+            font-size: 17px;
+            font-weight: 500;
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .card h2 .step-number {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: var(--accent);
+            color: white;
+            font-size: 13px;
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+
+        .card p.description {
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin-bottom: 18px;
+            padding-left: 38px;
+        }
+
+        .form-row {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+
+        .form-group {
+            flex: 1;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 12px;
+            font-weight: 500;
+            color: var(--text-secondary);
+            margin-bottom: 5px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 10px 14px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-family: var(--mono);
+            font-size: 14px;
+            background: var(--bg-input);
+            color: var(--text);
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        input:focus, select:focus {
+            border-color: var(--accent);
+        }
+
+        input::placeholder {
+            color: #b8ad9e;
+        }
+
+        button {
+            padding: 10px 24px;
+            border: none;
+            border-radius: 6px;
+            font-family: var(--font);
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: var(--accent);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--accent-hover);
+        }
+
+        .btn-primary:disabled {
+            background: #c9bfb2;
+            cursor: not-allowed;
+        }
+
+        .btn-secondary {
+            background: var(--bg-input);
+            color: var(--text);
+            border: 1px solid var(--border);
+        }
+
+        .btn-secondary:hover {
+            background: var(--border);
+        }
+
+        .btn-danger {
+            background: var(--error);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #a83a2e;
+        }
+
+        .actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 14px;
+        }
+
+        .status-box {
+            margin-top: 14px;
+            padding: 12px 16px;
+            border-radius: 6px;
+            font-family: var(--mono);
+            font-size: 12px;
+            line-height: 1.7;
+            white-space: pre-wrap;
+            word-break: break-all;
+            display: none;
+        }
+
+        .status-box.visible { display: block; }
+        .status-box.info { background: var(--accent-light); color: var(--accent); }
+        .status-box.success { background: var(--success-light); color: var(--success); }
+        .status-box.error { background: var(--error-light); color: var(--error); }
+        .status-box.warning { background: var(--warning-light); color: var(--warning); }
+
+        .wallet-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 14px 18px;
+            background: var(--success-light);
+            border-radius: 6px;
+            font-size: 13px;
+        }
+
+        .wallet-info .address {
+            font-family: var(--mono);
+            font-size: 12px;
+            color: var(--success);
+        }
+
+        .wallet-info .balance {
+            font-weight: 500;
+            color: var(--success);
+        }
+
+        .divider {
+            height: 1px;
+            background: var(--border);
+            margin: 24px 0;
+        }
+
+        .stake-display {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 14px;
+            margin-top: 14px;
+        }
+
+        .stake-metric {
+            padding: 14px;
+            background: var(--bg-input);
+            border-radius: 6px;
+            text-align: center;
+        }
+
+        .stake-metric .value {
+            font-size: 22px;
+            font-weight: 700;
+            color: var(--accent);
+            font-family: var(--mono);
+        }
+
+        .stake-metric .label {
+            font-size: 11px;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-top: 4px;
+        }
+
+        #walletSection { display: block; }
+        .connected-content { display: none; }
+        .connected-content.visible { display: block; }
+
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid var(--border);
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        footer a {
+            color: var(--accent);
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Arc Agent Staking</h1>
+            <p class="subtitle">Layer 6 -- USDC Staking Collateral for AI Agents</p>
+            <span class="badge">ARC TESTNET -- CHAIN ID 5042002</span>
+        </header>
+
+        <!-- Step 0: Connect Wallet -->
+        <div class="card" id="walletSection">
+            <h2><span class="step-number">0</span>Connect Wallet</h2>
+            <p class="description">Connect your MetaMask wallet to Arc Testnet to begin staking USDC collateral.</p>
+            <div id="walletDisconnected">
+                <button class="btn-primary" onclick="connectWallet()">Connect MetaMask</button>
+            </div>
+            <div id="walletConnected" style="display:none;">
+                <div class="wallet-info">
+                    <div>
+                        <div style="font-weight:500;color:var(--success);">Connected</div>
+                        <div class="address" id="walletAddress">--</div>
+                    </div>
+                    <div class="balance" id="usdcBalance">-- USDC</div>
+                </div>
+            </div>
+            <div class="status-box" id="walletStatus"></div>
+        </div>
+
+        <!-- Connected-only content -->
+        <div class="connected-content" id="connectedContent">
+
+            <!-- Step 1: Stake USDC -->
+            <div class="card">
+                <h2><span class="step-number">1</span>Stake USDC</h2>
+                <p class="description">Lock USDC collateral for your AI agent. Signals trust and quality commitment.</p>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Agent Token ID</label>
+                        <input type="number" id="stakeAgentId" placeholder="1" min="0">
+                    </div>
+                    <div class="form-group">
+                        <label>Amount (USDC)</label>
+                        <input type="text" id="stakeAmount" placeholder="50">
+                    </div>
+                </div>
+                <div class="actions">
+                    <button class="btn-primary" onclick="doStake()">Stake USDC</button>
+                </div>
+                <div class="status-box" id="stakeStatus"></div>
+            </div>
+
+            <!-- Step 2: Check Stake -->
+            <div class="card">
+                <h2><span class="step-number">2</span>Check Stake</h2>
+                <p class="description">View the current staking position for any agent.</p>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Agent Token ID</label>
+                        <input type="number" id="checkAgentId" placeholder="1" min="0">
+                    </div>
+                </div>
+                <div class="actions">
+                    <button class="btn-secondary" onclick="checkStake()">Check Stake</button>
+                </div>
+                <div class="stake-display" id="stakeDisplay" style="display:none;">
+                    <div class="stake-metric">
+                        <div class="value" id="displayAmount">--</div>
+                        <div class="label">USDC Staked</div>
+                    </div>
+                    <div class="stake-metric">
+                        <div class="value" id="displaySlashes">--</div>
+                        <div class="label">Slash Count</div>
+                    </div>
+                    <div class="stake-metric">
+                        <div class="value" id="displayActive">--</div>
+                        <div class="label">Status</div>
+                    </div>
+                    <div class="stake-metric">
+                        <div class="value" id="displayDate">--</div>
+                        <div class="label">Staked At</div>
+                    </div>
+                </div>
+                <div class="status-box" id="checkStatus"></div>
+            </div>
+
+            <!-- Step 3: Request Withdrawal -->
+            <div class="card">
+                <h2><span class="step-number">3</span>Request Withdrawal</h2>
+                <p class="description">Request to withdraw staked USDC. Starts a 7-day cooldown period.</p>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Agent Token ID</label>
+                        <input type="number" id="withdrawAgentId" placeholder="1" min="0">
+                    </div>
+                    <div class="form-group">
+                        <label>Amount (USDC)</label>
+                        <input type="text" id="withdrawAmount" placeholder="25">
+                    </div>
+                </div>
+                <div class="actions">
+                    <button class="btn-primary" onclick="requestWithdrawal()">Request Withdrawal</button>
+                </div>
+                <div class="status-box" id="withdrawStatus"></div>
+            </div>
+
+            <!-- Step 4: Complete / Cancel Withdrawal -->
+            <div class="card">
+                <h2><span class="step-number">4</span>Complete or Cancel Withdrawal</h2>
+                <p class="description">After 7 days, complete the withdrawal to receive USDC. Or cancel anytime.</p>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Withdrawal Request ID</label>
+                        <input type="number" id="completeRequestId" placeholder="1" min="1">
+                    </div>
+                </div>
+                <div class="actions">
+                    <button class="btn-primary" onclick="completeWithdrawal()">Complete Withdrawal</button>
+                    <button class="btn-secondary" onclick="cancelWithdrawal()">Cancel Withdrawal</button>
+                    <button class="btn-secondary" onclick="checkWithdrawal()">Check Status</button>
+                </div>
+                <div class="status-box" id="completeStatus"></div>
+            </div>
+
+            <!-- Step 5: Slash Simulation -->
+            <div class="card">
+                <h2><span class="step-number">5</span>Slash Simulation (Admin)</h2>
+                <p class="description">Simulate a dispute slash. Only authorized slashers can call this. 20% of the stake is sent to the recipient.</p>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Agent Token ID</label>
+                        <input type="number" id="slashAgentId" placeholder="1" min="0">
+                    </div>
+                    <div class="form-group">
+                        <label>Recipient Address</label>
+                        <input type="text" id="slashRecipient" placeholder="0x...">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Reason</label>
+                        <input type="text" id="slashReason" placeholder="Dispute: failed to deliver on job #42">
+                    </div>
+                </div>
+                <div class="actions">
+                    <button class="btn-danger" onclick="doSlash()">Slash Stake</button>
+                </div>
+                <div class="status-box" id="slashStatus"></div>
+            </div>
+
+        </div>
+
+        <footer>
+            Arc Protocol -- Agent Staking (Layer 6) |
+            <a href="https://testnet.arc.fun" target="_blank" rel="noopener">Arc Testnet Explorer</a>
+        </footer>
+    </div>
+
+<script>
+// ---------------------------------------------------------------------------
+// Config
+// ---------------------------------------------------------------------------
+
+const CHAIN_ID       = 5042002;
+const CHAIN_ID_HEX   = "0x" + CHAIN_ID.toString(16);
+const RPC_URL        = "https://rpc-testnet.arc.fun";
+const USDC_ADDRESS   = "0x3600000000000000000000000000000000000000";
+const USDC_DECIMALS  = 6;
+
+// Set this to your deployed AgentStaking address
+const STAKING_ADDRESS = "0x0000000000000000000000000000000000000000";
+
+const WITHDRAWAL_STATUS_MAP = { 0: "None", 1: "Pending", 2: "Completed", 3: "Cancelled" };
+
+// ---------------------------------------------------------------------------
+// ABIs
+// ---------------------------------------------------------------------------
+
+const STAKING_ABI = [
+    "function stake(uint256 agentTokenId, uint256 amount) external",
+    "function requestWithdrawal(uint256 agentTokenId, uint256 amount) external returns (uint256)",
+    "function completeWithdrawal(uint256 requestId) external",
+    "function cancelWithdrawal(uint256 requestId) external",
+    "function slash(uint256 agentTokenId, address recipient, string reason) external",
+    "function getStake(uint256 agentTokenId) external view returns (tuple(uint256 agentTokenId, uint256 amount, uint256 stakedAt, uint256 slashCount, bool active))",
+    "function getWithdrawalRequest(uint256 requestId) external view returns (tuple(uint256 id, uint256 agentTokenId, uint256 amount, uint256 requestedAt, uint8 status))",
+    "function getWithdrawalsByAgent(uint256 agentTokenId) external view returns (uint256[])",
+    "function isStaked(uint256 agentTokenId) external view returns (bool)",
+    "function getStakeAmount(uint256 agentTokenId) external view returns (uint256)",
+    "event Staked(uint256 indexed agentTokenId, uint256 amount, uint256 totalStake)",
+    "event WithdrawalRequested(uint256 indexed requestId, uint256 indexed agentTokenId, uint256 amount)",
+    "event WithdrawalCompleted(uint256 indexed requestId, uint256 amount)",
+    "event WithdrawalCancelled(uint256 indexed requestId)",
+    "event Slashed(uint256 indexed agentTokenId, uint256 amount, address recipient, string reason)"
+];
+
+const ERC20_ABI = [
+    "function approve(address spender, uint256 amount) external returns (bool)",
+    "function allowance(address owner, address spender) external view returns (uint256)",
+    "function balanceOf(address account) external view returns (uint256)"
+];
+
+// ---------------------------------------------------------------------------
+// State
+// ---------------------------------------------------------------------------
+
+let provider = null;
+let signer   = null;
+let staking  = null;
+let usdc     = null;
+
+// ---------------------------------------------------------------------------
+// Helpers
+// ---------------------------------------------------------------------------
+
+function showStatus(id, message, type) {
+    const el = document.getElementById(id);
+    el.className = "status-box visible " + type;
+    el.textContent = message;
+}
+
+function parseUsdc(amount) {
+    return ethers.parseUnits(amount, USDC_DECIMALS);
+}
+
+function formatUsdc(raw) {
+    return ethers.formatUnits(raw, USDC_DECIMALS);
+}
+
+function formatDate(timestamp) {
+    if (timestamp === 0n) return "N/A";
+    return new Date(Number(timestamp) * 1000).toLocaleDateString();
+}
+
+// ---------------------------------------------------------------------------
+// Wallet Connection
+// ---------------------------------------------------------------------------
+
+async function connectWallet() {
+    try {
+        if (!window.ethereum) {
+            showStatus("walletStatus", "MetaMask not detected. Please install MetaMask.", "error");
+            return;
+        }
+
+        showStatus("walletStatus", "Connecting to MetaMask ...", "info");
+
+        // Request accounts
+        await window.ethereum.request({ method: "eth_requestAccounts" });
+
+        // Switch to Arc Testnet
+        try {
+            await window.ethereum.request({
+                method: "wallet_switchEthereumChain",
+                params: [{ chainId: CHAIN_ID_HEX }]
+            });
+        } catch (switchErr) {
+            if (switchErr.code === 4902) {
+                await window.ethereum.request({
+                    method: "wallet_addEthereumChain",
+                    params: [{
+                        chainId: CHAIN_ID_HEX,
+                        chainName: "Arc Testnet",
+                        nativeCurrency: { name: "ARC", symbol: "ARC", decimals: 18 },
+                        rpcUrls: [RPC_URL],
+                    }]
+                });
+            } else {
+                throw switchErr;
+            }
+        }
+
+        provider = new ethers.BrowserProvider(window.ethereum);
+        signer   = await provider.getSigner();
+        const address = await signer.getAddress();
+
+        staking = new ethers.Contract(STAKING_ADDRESS, STAKING_ABI, signer);
+        usdc    = new ethers.Contract(USDC_ADDRESS, ERC20_ABI, signer);
+
+        // Display wallet info
+        const balance = await usdc.balanceOf(address);
+        document.getElementById("walletAddress").textContent = address;
+        document.getElementById("usdcBalance").textContent = formatUsdc(balance) + " USDC";
+        document.getElementById("walletDisconnected").style.display = "none";
+        document.getElementById("walletConnected").style.display = "block";
+        document.getElementById("connectedContent").classList.add("visible");
+
+        showStatus("walletStatus", "Connected: " + address, "success");
+    } catch (err) {
+        showStatus("walletStatus", "Connection failed: " + err.message, "error");
+    }
+}
+
+// ---------------------------------------------------------------------------
+// Step 1: Stake
+// ---------------------------------------------------------------------------
+
+async function doStake() {
+    try {
+        const agentId = document.getElementById("stakeAgentId").value;
+        const amount  = document.getElementById("stakeAmount").value;
+
+        if (!agentId || !amount) {
+            showStatus("stakeStatus", "Please fill in both fields.", "error");
+            return;
+        }
+
+        const amountRaw = parseUsdc(amount);
+        const address   = await signer.getAddress();
+
+        showStatus("stakeStatus", "Checking USDC allowance ...", "info");
+
+        // Check and set allowance
+        const allowance = await usdc.allowance(address, STAKING_ADDRESS);
+        if (allowance < amountRaw) {
+            showStatus("stakeStatus", "Approving USDC spend ...", "info");
+            const approveTx = await usdc.approve(STAKING_ADDRESS, amountRaw);
+            await approveTx.wait();
+            showStatus("stakeStatus", "USDC approved. Staking ...", "info");
+        }
+
+        // Stake
+        showStatus("stakeStatus", "Sending stake transaction ...", "info");
+        const tx = await staking.stake(agentId, amountRaw);
+        showStatus("stakeStatus", "Transaction sent: " + tx.hash + "\nWaiting for confirmation ...", "info");
+
+        const receipt = await tx.wait();
+        showStatus("stakeStatus",
+            "Staked " + amount + " USDC for agent #" + agentId +
+            "\nTx: " + receipt.hash +
+            "\nBlock: " + receipt.blockNumber,
+            "success"
+        );
+
+        // Refresh USDC balance
+        const balance = await usdc.balanceOf(address);
+        document.getElementById("usdcBalance").textContent = formatUsdc(balance) + " USDC";
+    } catch (err) {
+        showStatus("stakeStatus", "Stake failed: " + err.message, "error");
+    }
+}
+
+// ---------------------------------------------------------------------------
+// Step 2: Check Stake
+// ---------------------------------------------------------------------------
+
+async function checkStake() {
+    try {
+        const agentId = document.getElementById("checkAgentId").value;
+        if (!agentId) {
+            showStatus("checkStatus", "Please enter an agent token ID.", "error");
+            return;
+        }
+
+        showStatus("checkStatus", "Fetching stake info ...", "info");
+
+        const stake = await staking.getStake(agentId);
+        const display = document.getElementById("stakeDisplay");
+        display.style.display = "grid";
+
+        document.getElementById("displayAmount").textContent = formatUsdc(stake.amount);
+        document.getElementById("displaySlashes").textContent = stake.slashCount.toString();
+        document.getElementById("displayActive").textContent = stake.active ? "Active" : "Inactive";
+        document.getElementById("displayDate").textContent = formatDate(stake.stakedAt);
+
+        showStatus("checkStatus",
+            "Agent #" + agentId + " stake: " + formatUsdc(stake.amount) + " USDC" +
+            (stake.active ? " (active)" : " (inactive)"),
+            stake.active ? "success" : "warning"
+        );
+    } catch (err) {
+        showStatus("checkStatus", "Check failed: " + err.message, "error");
+    }
+}
+
+// ---------------------------------------------------------------------------
+// Step 3: Request Withdrawal
+// ---------------------------------------------------------------------------
+
+async function requestWithdrawal() {
+    try {
+        const agentId = document.getElementById("withdrawAgentId").value;
+        const amount  = document.getElementById("withdrawAmount").value;
+
+        if (!agentId || !amount) {
+            showStatus("withdrawStatus", "Please fill in both fields.", "error");
+            return;
+        }
+
+        showStatus("withdrawStatus", "Requesting withdrawal ...", "info");
+
+        const amountRaw = parseUsdc(amount);
+        const tx = await staking.requestWithdrawal(agentId, amountRaw);
+        showStatus("withdrawStatus", "Transaction sent: " + tx.hash + "\nWaiting for confirmation ...", "info");
+
+        const receipt = await tx.wait();
+
+        // Parse event to get request ID
+        let requestId = "?";
+        for (const log of receipt.logs) {
+            try {
+                const parsed = staking.interface.parseLog({ topics: log.topics, data: log.data });
+                if (parsed && parsed.name === "WithdrawalRequested") {
+                    requestId = parsed.args[0].toString();
+                }
+            } catch (_) {}
+        }
+
+        showStatus("withdrawStatus",
+            "Withdrawal requested!" +
+            "\nRequest ID: " + requestId +
+            "\nAmount: " + amount + " USDC" +
+            "\n7-day cooldown started. Complete after: " +
+            new Date(Date.now() + 604800000).toLocaleString() +
+            "\nTx: " + receipt.hash,
+            "success"
+        );
+    } catch (err) {
+        showStatus("withdrawStatus", "Request failed: " + err.message, "error");
+    }
+}
+
+// ---------------------------------------------------------------------------
+// Step 4: Complete / Cancel / Check Withdrawal
+// ---------------------------------------------------------------------------
+
+async function completeWithdrawal() {
+    try {
+        const requestId = document.getElementById("completeRequestId").value;
+        if (!requestId) {
+            showStatus("completeStatus", "Please enter a withdrawal request ID.", "error");
+            return;
+        }
+
+        showStatus("completeStatus", "Completing withdrawal #" + requestId + " ...", "info");
+
+        const tx = await staking.completeWithdrawal(requestId);
+        showStatus("completeStatus", "Transaction sent: " + tx.hash + "\nWaiting for confirmation ...", "info");
+
+        const receipt = await tx.wait();
+        showStatus("completeStatus",
+            "Withdrawal #" + requestId + " completed! USDC transferred to your wallet." +
+            "\nTx: " + receipt.hash,
+            "success"
+        );
+
+        // Refresh USDC balance
+        const address = await signer.getAddress();
+        const balance = await usdc.balanceOf(address);
+        document.getElementById("usdcBalance").textContent = formatUsdc(balance) + " USDC";
+    } catch (err) {
+        showStatus("completeStatus", "Complete failed: " + err.message, "error");
+    }
+}
+
+async function cancelWithdrawal() {
+    try {
+        const requestId = document.getElementById("completeRequestId").value;
+        if (!requestId) {
+            showStatus("completeStatus", "Please enter a withdrawal request ID.", "error");
+            return;
+        }
+
+        showStatus("completeStatus", "Cancelling withdrawal #" + requestId + " ...", "info");
+
+        const tx = await staking.cancelWithdrawal(requestId);
+        showStatus("completeStatus", "Transaction sent: " + tx.hash + "\nWaiting for confirmation ...", "info");
+
+        const receipt = await tx.wait();
+        showStatus("completeStatus",
+            "Withdrawal #" + requestId + " cancelled." +
+            "\nTx: " + receipt.hash,
+            "success"
+        );
+    } catch (err) {
+        showStatus("completeStatus", "Cancel failed: " + err.message, "error");
+    }
+}
+
+async function checkWithdrawal() {
+    try {
+        const requestId = document.getElementById("completeRequestId").value;
+        if (!requestId) {
+            showStatus("completeStatus", "Please enter a withdrawal request ID.", "error");
+            return;
+        }
+
+        showStatus("completeStatus", "Fetching withdrawal #" + requestId + " ...", "info");
+
+        const req = await staking.getWithdrawalRequest(requestId);
+        const status = WITHDRAWAL_STATUS_MAP[Number(req.status)] || "Unknown";
+        const cooldownEnd = Number(req.requestedAt) + 604800;
+        const now = Math.floor(Date.now() / 1000);
+        const canComplete = Number(req.status) === 1 && now >= cooldownEnd;
+
+        let timeLeft = "";
+        if (Number(req.status) === 1 && now < cooldownEnd) {
+            const remaining = cooldownEnd - now;
+            const days  = Math.floor(remaining / 86400);
+            const hours = Math.floor((remaining % 86400) / 3600);
+            timeLeft = "\nCooldown remaining: " + days + "d " + hours + "h";
+        }
+
+        showStatus("completeStatus",
+            "Withdrawal #" + requestId +
+            "\nAgent: #" + req.agentTokenId.toString() +
+            "\nAmount: " + formatUsdc(req.amount) + " USDC" +
+            "\nStatus: " + status +
+            "\nRequested: " + new Date(Number(req.requestedAt) * 1000).toLocaleString() +
+            "\nCooldown ends: " + new Date(cooldownEnd * 1000).toLocaleString() +
+            timeLeft +
+            (canComplete ? "\n\nReady to complete!" : ""),
+            canComplete ? "success" : "info"
+        );
+    } catch (err) {
+        showStatus("completeStatus", "Check failed: " + err.message, "error");
+    }
+}
+
+// ---------------------------------------------------------------------------
+// Step 5: Slash
+// ---------------------------------------------------------------------------
+
+async function doSlash() {
+    try {
+        const agentId   = document.getElementById("slashAgentId").value;
+        const recipient = document.getElementById("slashRecipient").value;
+        const reason    = document.getElementById("slashReason").value;
+
+        if (!agentId || !recipient || !reason) {
+            showStatus("slashStatus", "Please fill in all fields.", "error");
+            return;
+        }
+
+        showStatus("slashStatus", "Slashing agent #" + agentId + " ...", "info");
+
+        const tx = await staking.slash(agentId, recipient, reason);
+        showStatus("slashStatus", "Transaction sent: " + tx.hash + "\nWaiting for confirmation ...", "info");
+
+        const receipt = await tx.wait();
+
+        // Parse event
+        let slashAmount = "?";
+        for (const log of receipt.logs) {
+            try {
+                const parsed = staking.interface.parseLog({ topics: log.topics, data: log.data });
+                if (parsed && parsed.name === "Slashed") {
+                    slashAmount = formatUsdc(parsed.args[1]);
+                }
+            } catch (_) {}
+        }
+
+        showStatus("slashStatus",
+            "Agent #" + agentId + " slashed!" +
+            "\nSlashed amount: " + slashAmount + " USDC" +
+            "\nSent to: " + recipient +
+            "\nReason: " + reason +
+            "\nTx: " + receipt.hash,
+            "warning"
+        );
+    } catch (err) {
+        showStatus("slashStatus", "Slash failed: " + err.message, "error");
+    }
+}
+
+// ---------------------------------------------------------------------------
+// Auto-connect if wallet was previously connected
+// ---------------------------------------------------------------------------
+
+window.addEventListener("load", () => {
+    if (window.ethereum && window.ethereum.selectedAddress) {
+        connectWallet();
+    }
+});
+</script>
+</body>
+</html>

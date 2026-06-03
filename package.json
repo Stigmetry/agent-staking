@@ -1,0 +1,39 @@
+{
+  "name": "arc-agent-staking",
+  "version": "1.0.0",
+  "description": "Layer 6 of the Arc agentic commerce stack -- USDC staking collateral for AI agents",
+  "type": "module",
+  "main": "dist/staking/staking.js",
+  "types": "dist/staking/staking.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "mcp": "node dist/mcp/server.js",
+    "deploy": "bash scripts/deploy.sh",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.12.1",
+    "viem": "^2.21.0",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "typescript": "^5.6.0",
+    "@types/node": "^22.0.0"
+  },
+  "keywords": [
+    "arc",
+    "blockchain",
+    "ai-agents",
+    "staking",
+    "usdc",
+    "collateral",
+    "erc-8004",
+    "mcp"
+  ],
+  "author": "Arc Protocol",
+  "license": "MIT",
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
