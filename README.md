@@ -88,7 +88,7 @@ npm run mcp
 ## TypeScript SDK
 
 ```typescript
-import { AgentStakingClient } from "arc-agent-staking";
+import { AgentStakingClient } from "agent-staking";
 import { createWalletClient, http } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
 
